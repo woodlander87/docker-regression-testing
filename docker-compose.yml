@@ -1,0 +1,33 @@
+version: '3'
+services:
+  mongodb:
+    build: db
+    environment:
+      - WAIT_HOSTS_FINISH=diff
+  xkcd1:
+    build: xkcd1
+    links:
+      - mongodb
+    environment:
+      - WAIT_HOSTS=mongodb:27017
+      - WAIT_AFTER_HOSTS=5
+      - CLI_ARGS
+      - DB_NAME=db1
+  xkcd2:
+    build: xkcd3
+    links:
+      - mongodb
+    environment:
+      - WAIT_HOSTS=mongodb:27017
+      - WAIT_AFTER_HOSTS=5
+      - CLI_ARGS
+      - DB_NAME=db2
+  diff:
+    build: differ
+    links:
+      - xkcd1
+      - xkcd2
+    environment:
+      - DIFF_ARGS=--db-names db1,db2 --db-host mongodb
+    volumes:
+      - ~/results:/tmp/results
